@@ -3,12 +3,12 @@
 
 #include <SFML/Graphics.hpp>
 
-class Bullet {
+class Bullet
+{
 public:
     Bullet(float startX, float startY, float angle);
     void update();
-    void draw(sf::RenderWindow& window);
-
+    void draw(sf::RenderWindow &window);
     sf::Vector2f pos;
 
 private:

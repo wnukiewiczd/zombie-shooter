@@ -1,63 +1,83 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Network.hpp>
 #include <vector>
+#include <iostream>
+#include <unordered_map>
+#include "ClientSideCommunicationManager.h"
 #include "Player.h"
 #include "Bullet.h"
+#include "ServerManager.h"
 #include "CursorManager.h"
 
-int main() {
+int main()
+{
     const int windowWidth = 800;
     const int windowHeight = 600;
 
-    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Zombie Shooter Game");
+    ClientSideCommunicationManager communicationManager("127.0.0.1", 54001, "Player1");
+
+    communicationManager.connectToServer();
+
+    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Multiplayer Game");
     window.setFramerateLimit(60);
     window.setMouseCursorVisible(false);
 
-    Player player(windowWidth / 2.0f, windowHeight / 2.0f, 30.0f);
+    Player player(communicationManager.playerId, communicationManager.playerName, windowWidth / 2.0f, windowHeight / 2.0f, 30.0f); // Twój lokalny gracz
 
     CursorManager cursorManager(5.f);
 
-    std::vector<Bullet> bullets;
-
     sf::Clock clock;
 
-    while (window.isOpen()) {
+    while (window.isOpen())
+    {
+        // Obsługa zdarzeń
         sf::Event event;
-        while (window.pollEvent(event)) {
+        while (window.pollEvent(event))
+        {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
 
+        // Odbieranie aktualizacji od serwera
+        communicationManager.synchronizeServerPlayerList();
+        communicationManager.synchronizeClientPlayerList();
+
         float deltaTime = clock.restart().asSeconds();
 
-        // Update player
-        player.update(window, deltaTime, bullets);
-        
-        // Update custom cursor
+        // Aktualizacja gracza
+        player.update(window, deltaTime);
+
+        // Wysyłanie danych gracza do serwera
+        communicationManager.sendClientDataToServer(player);
+
+        // Aktualizacja celownika
         cursorManager.update(window);
 
-        // Update bullets
-        for (auto& bullet : bullets) {
-            bullet.update();
-        }
-        // Delete bullets which are outside the window
-        bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
-            [&](const Bullet& bullet) {
-                sf::Vector2f pos = bullet.pos;
-                return pos.x < 0 || pos.x > window.getSize().x || pos.y < 0 || pos.y > window.getSize().y;
-            }),
-            bullets.end());
-
-        // Fill the window with color before drawing anything
+        // Czyszczenie okna przed renderingiem kolejnym
         window.clear(sf::Color::Green);
-        
-        for (auto& bullet : bullets) {
+
+        // Rysowanie pocisków obecnego gracza
+        for (auto &bullet : player.bullets)
+        {
             bullet.draw(window);
         }
 
+        // Rysowanie lokalnego gracza
         player.draw(window);
-        
+
+        // Rysowanie innych graczy i ich pocisków
+        for (auto &[id, pl] : communicationManager.clientPlayerList)
+        {
+            for (auto &bullet : pl.bullets)
+            {
+                bullet.draw(window);
+            }
+            pl.draw(window);
+        }
+
+        // Rysowanie celownika
         cursorManager.draw(window);
-        
+
         window.display();
     }
 
