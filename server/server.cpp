@@ -40,6 +40,10 @@ int main()
                 serverManager.handlePlayerUpdate(packet, senderIp, senderPort);
                 serverManager.broadcastPlayerListToSingleClient(senderIp, senderPort);
             }
+            else if (message == "playerHit")
+            {
+                serverManager.handlePlayerHit(packet, senderIp, senderPort);
+            }
             else if (message == "playerDisconnect")
             {
                 serverManager.handlePlayerDisconnect(packet, senderIp, senderPort);

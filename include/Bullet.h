@@ -2,7 +2,7 @@
 #define BULLET_H
 
 #include <SFML/Graphics.hpp>
-
+#include "ClientSideCommunicationManager.h"
 class Bullet
 {
 public:
@@ -10,6 +10,8 @@ public:
     void update();
     void draw(sf::RenderWindow &window);
     sf::Vector2f pos;
+
+    void handleHitting(ClientSideCommunicationManager communicationManager);
 
 private:
     sf::CircleShape shape;

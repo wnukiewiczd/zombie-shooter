@@ -140,3 +140,31 @@ void ServerManager::handlePlayerUpdate(sf::Packet packet, sf::IpAddress senderIp
         std::cerr << "Update received for unknown player ID: " << id << std::endl;
     }
 }
+
+void ServerManager::handlePlayerHit(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort)
+{
+    unsigned int idFrom, idTo;
+    int damage;
+
+    packet >> idFrom >> idTo >> damage;
+
+    if (players.find(idTo) != players.end())
+    {
+        int newHealth = players[idTo].health - damage;
+        if (newHealth < 0)
+        {
+            players[idTo].health = 0;
+        }
+        else
+        {
+            players[idTo].health = newHealth;
+        }
+    }
+
+    sf::Packet packetTarget;
+    packetTarget << idFrom << damage;
+    if (socket.send(packetTarget, playerIps[idTo], playerPorts[idTo]) != sf::Socket::Done)
+    {
+        std::cerr << "Failed to send damage" << std::endl;
+    }
+}

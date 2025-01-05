@@ -31,6 +31,10 @@ public:
         return angle;
     }
 
+    void kill();
+
+    void dealDamage(int damage);
+
     // Dodajemy getter i setter dla pozycji gracza
     sf::Vector2f getPosition() const { return characterShape.getPosition(); }
     void setPosition(float x, float y) { characterShape.setPosition(x, y); }
@@ -58,16 +62,18 @@ private:
     sf::Vector2i mousePos;                  // Pozycja myszy
     sf::Clock shootCooldown;                // Czas od ostatniego strzału
     float healthBarWidth;
+    sf::Font font;
+    sf::Text nameText;
 
     // Prywatne metody pomocnicze
     void drawCharacter(sf::RenderWindow &window);
     void drawGun(sf::RenderWindow &window);
     void drawHealthBar(sf::RenderWindow &window);
+    void drawNameText(sf::RenderWindow &window);
     void handleMovement(float deltaTime);
     void handleRotation(sf::RenderWindow &window, float deltaTime);
     void handleShooting();
     void updateBullets(sf::RenderWindow &window);
-    void dealDamage(int damage);
 };
 
 #endif

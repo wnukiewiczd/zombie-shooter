@@ -1,7 +1,9 @@
 #include "Bullet.h"
 #include "Player.h"
 #include <cmath>
+#include <iostream>
 #include <SFML/Network.hpp>
+#include <filesystem>
 
 Player::Player(unsigned int id, std::string name, float x, float y, float radius)
 {
@@ -16,7 +18,7 @@ Player::Player(unsigned int id, std::string name, float x, float y, float radius
 
     healthBarWidth = radius * 2.0f;
 
-    float currentHealthWidth = healthBarWidth * (health / 100);
+    float currentHealthWidth = healthBarWidth * (static_cast<float>(health) / 100.0f);
 
     healthBarFrameShape.setSize(sf::Vector2f(healthBarWidth, radius / 3));
     healthBarFrameShape.setOutlineColor(sf::Color::Black);
@@ -35,6 +37,17 @@ Player::Player(unsigned int id, std::string name, float x, float y, float radius
 
     this->id = id;
     this->name = name;
+
+    if (!font.loadFromFile("assets/fonts/arial.ttf"))
+    {
+        std::cout << "Error loading font" << std::endl;
+    }
+
+    nameText.setFont(font);
+    nameText.setString(name);
+    nameText.setCharacterSize(16);
+    nameText.setFillColor(sf::Color::White);
+    nameText.setStyle(sf::Text::Regular);
 }
 
 void Player::update(sf::RenderWindow &window, float deltaTime)
@@ -118,8 +131,12 @@ void Player::handleShooting()
 void Player::draw(sf::RenderWindow &window)
 {
     drawCharacter(window);
-    drawGun(window);
+    if (health > 0)
+    {
+        drawGun(window);
+    }
     drawHealthBar(window);
+    drawNameText(window);
 }
 
 void Player::drawCharacter(sf::RenderWindow &window)
@@ -140,12 +157,19 @@ void Player::drawGun(sf::RenderWindow &window)
 
 void Player::drawHealthBar(sf::RenderWindow &window)
 {
-    float currentHealthWidth = healthBarWidth * (health / 100);
+    float currentHealthWidth = healthBarWidth * (static_cast<float>(health) / 100.0f);
     healthBarShape.setSize(sf::Vector2f(currentHealthWidth, healthBarShape.getSize().y));
     healthBarShape.setPosition(characterShape.getPosition().x - characterShape.getRadius(), characterShape.getPosition().y - characterShape.getRadius() * 2.0f);
     healthBarFrameShape.setPosition(characterShape.getPosition().x - characterShape.getRadius(), characterShape.getPosition().y - characterShape.getRadius() * 2.0f);
     window.draw(healthBarShape);
     window.draw(healthBarFrameShape);
+}
+
+void Player::drawNameText(sf::RenderWindow &window)
+{
+    float textHeight = nameText.getGlobalBounds().height;
+    nameText.setPosition(characterShape.getPosition().x - characterShape.getRadius(), characterShape.getPosition().y - characterShape.getRadius() * 2.5f - textHeight);
+    window.draw(nameText);
 }
 
 // Funkcja dodająca pocisk do tabeli
@@ -169,11 +193,16 @@ void Player::dealDamage(int damage)
     int newHealth = health - damage;
     if (newHealth < 0)
     {
-        health = 0;
-        // Tutaj umieranie
+        this->kill();
     }
     else
     {
         health = newHealth;
     }
+}
+
+void Player::kill()
+{
+    health = 0;
+    characterShape.setFillColor(sf::Color::Black);
 }

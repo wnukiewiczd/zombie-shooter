@@ -25,3 +25,7 @@ void Bullet::draw(sf::RenderWindow &window)
 {
     window.draw(shape);
 }
+
+void Bullet::handleHitting(ClientSideCommunicationManager communicationManager)
+{
+}

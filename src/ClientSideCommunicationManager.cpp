@@ -61,7 +61,7 @@ void ClientSideCommunicationManager::disconnectFromServer()
     }
 }
 
-void ClientSideCommunicationManager::synchronizePlayerList()
+void ClientSideCommunicationManager::receiveData(Player player)
 {
     sf::Packet incomingPacket;
     sf::IpAddress senderIp;
@@ -69,63 +69,79 @@ void ClientSideCommunicationManager::synchronizePlayerList()
 
     if (socket.receive(incomingPacket, senderIp, senderPort) == sf::Socket::Done)
     {
-        unsigned int playersCount;
-        incomingPacket >> playersCount;
-
-        for (int i = 0; i < playersCount; i++)
+        std::string state;
+        incomingPacket >> state;
+        if (state == "playerList")
         {
-            unsigned int id, bulletCount;
-            std::string name;
-            float x, y, angle;
-            int health;
+            this->synchronizePlayerList(incomingPacket);
+        }
+        else if (state == "playerHit")
+        {
+            int damage;
+            incomingPacket >> damage;
+            player.dealDamage(damage);
+        }
+    }
+}
 
-            incomingPacket >> id >> name >> x >> y >> angle >> health;
+void ClientSideCommunicationManager::synchronizePlayerList(sf::Packet incomingPacket)
+{
+    unsigned int playersCount;
+    incomingPacket >> playersCount;
 
-            std::vector<std::pair<float, float>> bullets;
-            incomingPacket >> bulletCount;
-            for (int j = 0; j < bulletCount; j++)
+    for (int i = 0; i < playersCount; i++)
+    {
+        unsigned int id, bulletCount;
+        std::string name;
+        float x, y, angle;
+        int health;
+
+        incomingPacket >> id >> name >> x >> y >> angle >> health;
+
+        std::vector<std::pair<float, float>> bullets;
+        incomingPacket >> bulletCount;
+        for (int j = 0; j < bulletCount; j++)
+        {
+            float bulletX, bulletY;
+            incomingPacket >> bulletX >> bulletY;
+
+            std::pair<float, float> bullet;
+            bullet = std::make_pair(bulletX, bulletY);
+            bullets.push_back(bullet);
+        }
+
+        if (id != playerId)
+        {
+            auto it = clientPlayerList.find(id);
+            if (it != clientPlayerList.end())
             {
-                float bulletX, bulletY;
-                incomingPacket >> bulletX >> bulletY;
+                // Update existing player record
+                it->second.setPosition(x, y);
+                it->second.setHealth(health);
+                it->second.setAngle(angle);
 
-                std::pair<float, float> bullet;
-                bullet = std::make_pair(bulletX, bulletY);
-                bullets.push_back(bullet);
+                it->second.bullets.clear(); // Clear bullets to update
+                for (const auto &bullet : bullets)
+                {
+                    it->second.addBullet(bullet.first, bullet.second, 0.0f); // Default angle if not available
+                }
             }
-
-            if (id != playerId)
+            else
             {
-                auto it = clientPlayerList.find(id);
-                if (it != clientPlayerList.end())
+                // Add a new player to the client list
+                Player newPlayer(
+                    id,
+                    name,
+                    x,
+                    y,
+                    30.0f);
+                newPlayer.setHealth(health);
+                newPlayer.setAngle(angle);
+                for (const auto &bullet : bullets)
                 {
-                    // Update existing player record
-                    it->second.setPosition(x, y);
-                    it->second.setHealth(health);
-                    it->second.setAngle(angle);
-
-                    it->second.bullets.clear(); // Clear bullets to update
-                    for (const auto &bullet : bullets)
-                    {
-                        it->second.addBullet(bullet.first, bullet.second, 0.0f); // Default angle if not available
-                    }
+                    newPlayer.addBullet(bullet.first, bullet.second, 0.0f); // Default angle if not available
                 }
-                else
-                {
-                    // Add a new player to the client list
-                    Player newPlayer(
-                        id,
-                        name,
-                        x,
-                        y,
-                        30.0f);
-                    newPlayer.setHealth(health);
-                    newPlayer.setAngle(angle);
-                    for (const auto &bullet : bullets)
-                    {
-                        newPlayer.addBullet(bullet.first, bullet.second, 0.0f); // Default angle if not available
-                    }
-                    clientPlayerList.emplace(id, newPlayer);
-                }
+                clientPlayerList.emplace(id, newPlayer);
             }
         }
     }

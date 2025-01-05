@@ -43,6 +43,7 @@ public:
     void broadcastPlayerListToAllClients();
     void handlePlayerJoin(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort);
     void handlePlayerUpdate(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort);
+    void handlePlayerHit(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort);
     void handlePlayerDisconnect(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort);
 
 private:

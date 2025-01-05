@@ -3,9 +3,9 @@
 #include <vector>
 #include <iostream>
 #include <unordered_map>
-#include "ClientSideCommunicationManager.h"
-#include "Player.h"
 #include "Bullet.h"
+#include "Player.h"
+#include "ClientSideCommunicationManager.h"
 #include "ServerManager.h"
 #include "CursorManager.h"
 
@@ -47,7 +47,7 @@ int main()
         communicationManager.sendClientDataToServer(player);
 
         // Odbieranie aktualizacji od serwera
-        communicationManager.synchronizePlayerList();
+        communicationManager.receiveData(player);
 
         // Aktualizacja gracza
         player.update(window, deltaTime);
