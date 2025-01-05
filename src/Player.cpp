@@ -14,6 +14,21 @@ Player::Player(unsigned int id, std::string name, float x, float y, float radius
     gunShape.setFillColor(sf::Color::Black);
     gunShape.setPosition(x + radius - gunShape.getSize().x, y + gunShape.getSize().y);
 
+    healthBarWidth = radius * 2.0f;
+
+    float currentHealthWidth = healthBarWidth * (health / 100);
+
+    healthBarFrameShape.setSize(sf::Vector2f(healthBarWidth, radius / 3));
+    healthBarFrameShape.setOutlineColor(sf::Color::Black);
+    healthBarFrameShape.setOutlineThickness(2);
+    healthBarFrameShape.setFillColor(sf::Color::Transparent);
+    healthBarFrameShape.setPosition(characterShape.getPosition().x - characterShape.getRadius(), characterShape.getPosition().y - characterShape.getRadius() * 2.0f);
+
+    healthBarShape.setSize(sf::Vector2f(currentHealthWidth, radius / 3));
+    healthBarShape.setOutlineThickness(0);
+    healthBarShape.setFillColor(sf::Color::Blue);
+    healthBarShape.setPosition(characterShape.getPosition().x - characterShape.getRadius(), characterShape.getPosition().y - characterShape.getRadius() * 2.0f);
+
     gunOffset = sf::Vector2f(characterShape.getRadius() - gunShape.getSize().x, characterShape.getRadius() - gunShape.getSize().x);
 
     speed = 200.0f;
@@ -102,25 +117,35 @@ void Player::handleShooting()
 
 void Player::draw(sf::RenderWindow &window)
 {
-    characterShape.setRotation(angle);
-    gunShape.setRotation(angle);
-
-    gunShape.setPosition(
-        characterShape.getPosition().x + this->gunOffset.x * std::cos(angle * M_PI / 180.f),
-        characterShape.getPosition().y + this->gunOffset.y * std::sin(angle * M_PI / 180.f));
-
     drawCharacter(window);
     drawGun(window);
+    drawHealthBar(window);
 }
 
 void Player::drawCharacter(sf::RenderWindow &window)
 {
+    characterShape.setRotation(angle);
     window.draw(characterShape);
 }
 
 void Player::drawGun(sf::RenderWindow &window)
 {
+    gunShape.setRotation(angle);
+
+    gunShape.setPosition(
+        characterShape.getPosition().x + this->gunOffset.x * std::cos(angle * M_PI / 180.f),
+        characterShape.getPosition().y + this->gunOffset.y * std::sin(angle * M_PI / 180.f));
     window.draw(gunShape);
+}
+
+void Player::drawHealthBar(sf::RenderWindow &window)
+{
+    float currentHealthWidth = healthBarWidth * (health / 100);
+    healthBarShape.setSize(sf::Vector2f(currentHealthWidth, healthBarShape.getSize().y));
+    healthBarShape.setPosition(characterShape.getPosition().x - characterShape.getRadius(), characterShape.getPosition().y - characterShape.getRadius() * 2.0f);
+    healthBarFrameShape.setPosition(characterShape.getPosition().x - characterShape.getRadius(), characterShape.getPosition().y - characterShape.getRadius() * 2.0f);
+    window.draw(healthBarShape);
+    window.draw(healthBarFrameShape);
 }
 
 // Funkcja dodająca pocisk do tabeli
@@ -137,4 +162,18 @@ void Player::setHealth(int health)
 void Player::setAngle(float newAngle)
 {
     this->angle = newAngle;
+}
+
+void Player::dealDamage(int damage)
+{
+    int newHealth = health - damage;
+    if (newHealth < 0)
+    {
+        health = 0;
+        // Tutaj umieranie
+    }
+    else
+    {
+        health = newHealth;
+    }
 }

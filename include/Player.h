@@ -47,22 +47,27 @@ public:
     float getRotation() const { return angle; }
 
 private:
-    sf::CircleShape characterShape; // Reprezentacja gracza jako okrąg
-    sf::RectangleShape gunShape;    // Reprezentacja broni
-    sf::Vector2f gunOffset;         // Pozycja broni względem gracza
-    float speed = 200.0f;           // Prędkość poruszania się gracza
-    float angle = 0.0f;             // Kąt obrotu broni
-    int health = 100;               // Domyślne zdrowie gracza
-    sf::Vector2i mousePos;          // Pozycja myszy
-    sf::Clock shootCooldown;        // Czas od ostatniego strzału
+    sf::CircleShape characterShape;         // Reprezentacja gracza jako okrąg
+    sf::RectangleShape gunShape;            // Reprezentacja broni
+    sf::RectangleShape healthBarShape;      // Reprezentacja życia
+    sf::RectangleShape healthBarFrameShape; // Reprezentacja życia obramówki
+    sf::Vector2f gunOffset;                 // Pozycja broni względem gracza
+    float speed = 200.0f;                   // Prędkość poruszania się gracza
+    float angle = 0.0f;                     // Kąt obrotu broni
+    int health = 100;                       // Domyślne zdrowie gracza
+    sf::Vector2i mousePos;                  // Pozycja myszy
+    sf::Clock shootCooldown;                // Czas od ostatniego strzału
+    float healthBarWidth;
 
     // Prywatne metody pomocnicze
     void drawCharacter(sf::RenderWindow &window);
     void drawGun(sf::RenderWindow &window);
+    void drawHealthBar(sf::RenderWindow &window);
     void handleMovement(float deltaTime);
     void handleRotation(sf::RenderWindow &window, float deltaTime);
     void handleShooting();
     void updateBullets(sf::RenderWindow &window);
+    void dealDamage(int damage);
 };
 
 #endif
