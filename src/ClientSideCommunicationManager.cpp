@@ -50,7 +50,18 @@ void ClientSideCommunicationManager::connectToServer()
     }
 }
 
-void ClientSideCommunicationManager::synchronizeServerPlayerList()
+void ClientSideCommunicationManager::disconnectFromServer()
+{
+    sf::Packet packet;
+    packet << "playerDisconnect" << playerId << playerName;
+    if (socket.send(packet, serverIp, serverPort) != sf::Socket::Done)
+    {
+        std::cerr << "Failed to send disconnect packet to server." << std::endl;
+        std::exit(0);
+    }
+}
+
+void ClientSideCommunicationManager::synchronizePlayerList()
 {
     sf::Packet incomingPacket;
     sf::IpAddress senderIp;
@@ -58,104 +69,64 @@ void ClientSideCommunicationManager::synchronizeServerPlayerList()
 
     if (socket.receive(incomingPacket, senderIp, senderPort) == sf::Socket::Done)
     {
-        std::string jsonString;
-        incomingPacket >> jsonString;
+        unsigned int playersCount;
+        incomingPacket >> playersCount;
 
-        try
+        for (int i = 0; i < playersCount; i++)
         {
-            // Parsowanie JSON
-            auto jsonData = nlohmann::json::parse(jsonString);
-            for (auto &[idString, data] : jsonData.items())
-            {
-                unsigned int id = static_cast<unsigned int>(std::stoi(idString));
-                auto it = serverPlayerList.find(id);
-                if (it != serverPlayerList.end())
-                {
-                    it->second.x = data["x"];
-                    it->second.y = data["y"];
-                    it->second.angle = data["angle"];
-                    it->second.health = data["health"];
+            unsigned int id, bulletCount;
+            std::string name;
+            float x, y, angle;
+            int health;
 
-                    // Mozliwe ze update pociskow wymagac bedzie optymalizacji
-                    it->second.bullets.clear();
-                    for (const auto &bullet : data["bullets"])
+            incomingPacket >> id >> name >> x >> y >> angle >> health;
+
+            std::vector<std::pair<float, float>> bullets;
+            incomingPacket >> bulletCount;
+            for (int j = 0; j < bulletCount; j++)
+            {
+                float bulletX, bulletY;
+                incomingPacket >> bulletX >> bulletY;
+
+                std::pair<float, float> bullet;
+                bullet = std::make_pair(bulletX, bulletY);
+                bullets.push_back(bullet);
+            }
+
+            if (id != playerId)
+            {
+                auto it = clientPlayerList.find(id);
+                if (it != clientPlayerList.end())
+                {
+                    // Update existing player record
+                    it->second.setPosition(x, y);
+                    it->second.setHealth(health);
+                    it->second.setAngle(angle);
+
+                    it->second.bullets.clear(); // Clear bullets to update
+                    for (const auto &bullet : bullets)
                     {
-                        it->second.bullets.emplace_back(bullet["x"], bullet["y"]);
+                        it->second.addBullet(bullet.first, bullet.second, 0.0f); // Default angle if not available
                     }
                 }
                 else
                 {
-                    ServerPlayer newPlayer(
+                    // Add a new player to the client list
+                    Player newPlayer(
                         id,
-                        data["name"],
-                        data["x"],
-                        data["y"],
-                        data["angle"],
-                        data["health"]);
-                    for (const auto &bullet : data["bullets"])
+                        name,
+                        x,
+                        y,
+                        30.0f);
+                    newPlayer.setHealth(health);
+                    newPlayer.setAngle(angle);
+                    for (const auto &bullet : bullets)
                     {
-                        newPlayer.bullets.emplace_back(bullet["x"], bullet["y"]);
+                        newPlayer.addBullet(bullet.first, bullet.second, 0.0f); // Default angle if not available
                     }
-                    serverPlayerList.emplace(id, newPlayer);
+                    clientPlayerList.emplace(id, newPlayer);
                 }
             }
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Failed to parse JSON: " << e.what() << std::endl;
-        }
-    }
-}
-
-void ClientSideCommunicationManager::synchronizeClientPlayerList()
-{
-    for (const auto &[id, serverPlayer] : serverPlayerList)
-    {
-        if (id == playerId)
-        {
-            // Skip the player's own data
-            continue;
-        }
-
-        auto it = clientPlayerList.find(id);
-        if (it != clientPlayerList.end())
-        {
-            // Update existing player record
-            it->second.setPosition(serverPlayer.x, serverPlayer.y);
-            it->second.setHealth(serverPlayer.health);
-            it->second.setAngle(serverPlayer.angle);
-
-            it->second.bullets.clear(); // Clear bullets to update
-            for (const auto &bullet : serverPlayer.bullets)
-            {
-                it->second.addBullet(bullet.first, bullet.second, 0.0f); // Default angle if not available
-            }
-        }
-        else
-        {
-            // Add a new player to the client list
-            Player newPlayer(
-                id,
-                serverPlayer.name,
-                serverPlayer.x,
-                serverPlayer.y,
-                30.0f);
-            newPlayer.setHealth(serverPlayer.health);
-            newPlayer.setAngle(serverPlayer.angle);
-            for (const auto &bullet : serverPlayer.bullets)
-            {
-                newPlayer.addBullet(bullet.first, bullet.second, 0.0f); // Default angle if not available
-            }
-            clientPlayerList.emplace(id, newPlayer);
-        }
-    }
-
-    for (const auto &[id, clientPlayer] : clientPlayerList)
-    {
-        auto it = serverPlayerList.find(id);
-        if (it == serverPlayerList.end())
-        {
-            clientPlayerList.erase(id);
         }
     }
 }

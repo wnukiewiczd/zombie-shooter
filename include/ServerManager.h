@@ -38,7 +38,8 @@ public:
 
     sf::UdpSocket socket;
 
-    void broadcastPlayerListToSingleClient(unsigned int playerId);
+    void broadcastPlayerListToSingleClient(sf::IpAddress ip,
+                                           unsigned short port);
     void broadcastPlayerListToAllClients();
     void handlePlayerJoin(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort);
     void handlePlayerUpdate(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort);

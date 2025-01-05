@@ -33,17 +33,18 @@ int main()
             if (message == "playerJoin")
             {
                 serverManager.handlePlayerJoin(packet, senderIp, senderPort);
+                serverManager.broadcastPlayerListToSingleClient(senderIp, senderPort);
             }
             else if (message == "playerUpdate")
             {
                 serverManager.handlePlayerUpdate(packet, senderIp, senderPort);
+                serverManager.broadcastPlayerListToSingleClient(senderIp, senderPort);
             }
             else if (message == "playerDisconnect")
             {
                 serverManager.handlePlayerDisconnect(packet, senderIp, senderPort);
             }
         }
-        serverManager.broadcastPlayerListToAllClients();
     }
 
     return 0;

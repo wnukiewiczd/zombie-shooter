@@ -12,77 +12,51 @@ ServerManager::ServerManager()
 {
 }
 
-void ServerManager::broadcastPlayerListToSingleClient(unsigned int playerId)
+void ServerManager::broadcastPlayerListToSingleClient(sf::IpAddress ip,
+                                                      unsigned short port)
 {
-    std::lock_guard<std::mutex> lock(playersMutex);
-
     sf::Packet packet;
-    std::ostringstream jsonStream;
-    jsonStream << "{";
+    packet << static_cast<unsigned int>(players.size());
     for (const auto &[id, player] : players)
     {
-        // Tutaj powinnismy przeslac pozycje x, pozycje y, tablice pociskow, zycie, kat obrotu
-        jsonStream << "\"" << id << "\": {\"name\": \"" << player.name << "\", \"x\": " << player.x << ", \"y\": " << player.y << ", \"health\": " << player.health << "},";
+        packet << id << player.name << player.x << player.y << player.angle << player.health;
+        packet << static_cast<unsigned int>(player.bullets.size());
+        for (const auto &bullet : player.bullets)
+        {
+            packet << bullet.first << bullet.second;
+        }
     }
-    std::string jsonString = jsonStream.str();
-    if (!players.empty())
-    {
-        jsonString.pop_back(); // Remove trailing comma
-    }
-    jsonString += "}";
 
-    packet << jsonString;
-    if (socket.send(packet, playerIps[playerId], playerPorts[playerId]) != sf::Socket::Done)
+    if (socket.send(packet, ip, port) != sf::Socket::Done)
     {
-        std::cerr << "Failed to send playerlist to player " << playerId << std::endl;
+        std::cerr << "Failed to send update to ip " << ip << std::endl;
     }
 }
 
 void ServerManager::broadcastPlayerListToAllClients()
 {
-    std::lock_guard<std::mutex> lock(playersMutex);
-
-    sf::Packet packet;
-    std::ostringstream jsonStream;
-    jsonStream << "{";
     for (const auto &[id, player] : players)
     {
-        using json = nlohmann::json;
-        json playerJson;
-        playerJson["name"] = player.name;
-        playerJson["x"] = player.x;
-        playerJson["y"] = player.y;
-        playerJson["angle"] = player.angle;
-        playerJson["health"] = player.health;
-
-        json bulletsArray = json::array();
-        for (const auto &bullet : player.bullets)
+        sf::Packet packet;
+        packet << static_cast<unsigned int>(players.size());
+        for (const auto &[id, player] : players)
         {
-            json bulletJson;
-            bulletJson["x"] = bullet.first;
-            bulletJson["y"] = bullet.second;
-            bulletsArray.push_back(bulletJson);
+            packet << id << player.name << player.x << player.y << player.angle << player.health;
+            packet << static_cast<unsigned int>(player.bullets.size());
+            for (const auto &bullet : player.bullets)
+            {
+                packet << bullet.first << bullet.second;
+            }
         }
 
-        playerJson["bullets"] = bulletsArray;
-
-        jsonStream << "\"" << id << "\": " << playerJson.dump() << ",";
-
-        // jsonStream << "\"" << id << "\": {\"name\": \"" << player.name << "\", \"x\": " << player.x << ", \"y\": " << player.y << ", \"health\": " << player.health << "},";
-    }
-    std::string jsonString = jsonStream.str();
-    if (!players.empty())
-    {
-        jsonString.pop_back(); // Remove trailing comma
-    }
-    jsonString += "}";
-
-    packet << jsonString;
-    for (const auto &[id, player] : players)
-    {
         if (socket.send(packet, playerIps[id], playerPorts[id]) != sf::Socket::Done)
         {
             std::cerr << "Failed to send update to player " << player.id << std::endl;
+        }
+        else
+        {
+            if (id == 1)
+                std::cout << player.x << std::endl; // To jest BAAARDZO DOKLADNE
         }
     }
 }
@@ -111,13 +85,14 @@ void ServerManager::handlePlayerJoin(sf::Packet packet, sf::IpAddress senderIp, 
 void ServerManager::handlePlayerDisconnect(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort)
 {
     unsigned int id;
+    std::string name;
     packet >> id;
 
     std::lock_guard<std::mutex> lock(playersMutex);
     players.erase(id);
     playerIps.erase(id);
     playerPorts.erase(id);
-    std::cout << "Player with ID " << id << " disconnected." << std::endl;
+    std::cout << "Player \" " << name << "\" (" << id << ") disconnected." << std::endl;
 
     if (players.empty())
     {
@@ -147,7 +122,6 @@ void ServerManager::handlePlayerUpdate(sf::Packet packet, sf::IpAddress senderIp
         bullets.push_back(bullet);
     }
 
-    std::lock_guard<std::mutex> lock(playersMutex);
     if (players.find(id) != players.end())
     {
         players[id].x = x;

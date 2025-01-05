@@ -35,20 +35,22 @@ int main()
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
+            {
+                communicationManager.disconnectFromServer();
                 window.close();
+            }
         }
-
-        // Odbieranie aktualizacji od serwera
-        communicationManager.synchronizeServerPlayerList();
-        communicationManager.synchronizeClientPlayerList();
 
         float deltaTime = clock.restart().asSeconds();
 
-        // Aktualizacja gracza
-        player.update(window, deltaTime);
-
         // Wysyłanie danych gracza do serwera
         communicationManager.sendClientDataToServer(player);
+
+        // Odbieranie aktualizacji od serwera
+        communicationManager.synchronizePlayerList();
+
+        // Aktualizacja gracza
+        player.update(window, deltaTime);
 
         // Aktualizacja celownika
         cursorManager.update(window);

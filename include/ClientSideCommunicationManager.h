@@ -16,8 +16,10 @@ public:
     unsigned int playerId = 0;
 
     void connectToServer();
+    void disconnectFromServer();
     std::unordered_map<unsigned int, ServerPlayer> serverPlayerList;
     std::unordered_map<unsigned int, Player> clientPlayerList;
+    void synchronizePlayerList();
     void synchronizeServerPlayerList();
     void synchronizeClientPlayerList();
     void sendClientDataToServer(Player player);
