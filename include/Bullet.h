@@ -2,7 +2,9 @@
 #define BULLET_H
 
 #include <SFML/Graphics.hpp>
-#include "ClientSideCommunicationManager.h"
+
+class ClientSideCommunicationManager;
+
 class Bullet
 {
 public:

@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include "Bullet.h"
+#include "ClientSideCommunicationManager.h"
 
 #include <cmath>
 

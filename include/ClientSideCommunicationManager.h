@@ -5,7 +5,8 @@
 #include <SFML/Network.hpp>
 #include <unordered_map>
 #include "ServerManager.h"
-#include "Player.h"
+
+class Player;
 
 class ClientSideCommunicationManager
 {

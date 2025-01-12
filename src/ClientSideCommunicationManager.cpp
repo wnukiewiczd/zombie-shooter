@@ -3,6 +3,7 @@
 #include <iostream>
 #include "ClientSideCommunicationManager.h"
 #include "Player.h"
+#include "Bullet.h"
 #include <json.hpp>
 #include <cmath>
 
@@ -66,16 +67,15 @@ void ClientSideCommunicationManager::receiveData(Player player)
     sf::Packet incomingPacket;
     sf::IpAddress senderIp;
     unsigned short senderPort;
-
     if (socket.receive(incomingPacket, senderIp, senderPort) == sf::Socket::Done)
     {
-        std::string state;
-        incomingPacket >> state;
-        if (state == "playerList")
+        std::string message;
+        incomingPacket >> message;
+        if (message == "playerList")
         {
             this->synchronizePlayerList(incomingPacket);
         }
-        else if (state == "playerHit")
+        else if (message == "playerHit")
         {
             int damage;
             incomingPacket >> damage;

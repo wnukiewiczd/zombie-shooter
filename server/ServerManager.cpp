@@ -16,7 +16,7 @@ void ServerManager::broadcastPlayerListToSingleClient(sf::IpAddress ip,
                                                       unsigned short port)
 {
     sf::Packet packet;
-    packet << static_cast<unsigned int>(players.size());
+    packet << std::string("playerList") << static_cast<unsigned int>(players.size());
     for (const auto &[id, player] : players)
     {
         packet << id << player.name << player.x << player.y << player.angle << player.health;
@@ -56,7 +56,7 @@ void ServerManager::broadcastPlayerListToAllClients()
         else
         {
             if (id == 1)
-                std::cout << player.x << std::endl; // To jest BAAARDZO DOKLADNE
+                std::cout << player.x << std::endl;
         }
     }
 }

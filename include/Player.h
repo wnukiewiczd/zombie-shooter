@@ -2,9 +2,10 @@
 #define PLAYER_H
 
 #include <SFML/Graphics.hpp>
-#include "Bullet.h"
 #include <vector>
 #include <cmath>
+
+class Bullet;
 
 class Player
 {

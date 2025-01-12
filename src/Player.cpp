@@ -38,12 +38,6 @@ Player::Player(unsigned int id, std::string name, float x, float y, float radius
     this->id = id;
     this->name = name;
 
-    if (!font.loadFromFile("assets/fonts/arial.ttf"))
-    {
-        std::cout << "Error loading font" << std::endl;
-    }
-
-    nameText.setFont(font);
     nameText.setString(name);
     nameText.setCharacterSize(16);
     nameText.setFillColor(sf::Color::White);
@@ -78,21 +72,43 @@ void Player::handleMovement(float deltaTime)
 {
     sf::Vector2f movement(0.0f, 0.0f);
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+    if (id == 1)
     {
-        movement.y -= speed * deltaTime;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        {
+            movement.y -= speed * deltaTime;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        {
+            movement.y += speed * deltaTime;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        {
+            movement.x -= speed * deltaTime;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        {
+            movement.x += speed * deltaTime;
+        }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+    else
     {
-        movement.y += speed * deltaTime;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-    {
-        movement.x -= speed * deltaTime;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-    {
-        movement.x += speed * deltaTime;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+        {
+            movement.y -= speed * deltaTime;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+        {
+            movement.y += speed * deltaTime;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+        {
+            movement.x -= speed * deltaTime;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+        {
+            movement.x += speed * deltaTime;
+        }
     }
 
     characterShape.move(movement);
@@ -167,6 +183,13 @@ void Player::drawHealthBar(sf::RenderWindow &window)
 
 void Player::drawNameText(sf::RenderWindow &window)
 {
+    if (!font.loadFromFile("assets/fonts/arial.ttf"))
+    {
+        std::cout << "Error loading font" << std::endl;
+    }
+
+    nameText.setFont(font);
+
     float textHeight = nameText.getGlobalBounds().height;
     nameText.setPosition(characterShape.getPosition().x - characterShape.getRadius(), characterShape.getPosition().y - characterShape.getRadius() * 2.5f - textHeight);
     window.draw(nameText);
