@@ -61,6 +61,7 @@ int main()
         // Rysowanie pocisków obecnego gracza
         for (auto &bullet : player.bullets)
         {
+            bullet.handleHitting(communicationManager);
             bullet.draw(window);
         }
 

@@ -126,7 +126,7 @@ void Player::handleRotation(sf::RenderWindow &window, float deltaTime)
 
 void Player::handleShooting()
 {
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+    if ((sf::Mouse::isButtonPressed(sf::Mouse::Left) && id == 1) || (sf::Mouse::isButtonPressed(sf::Mouse::Right) && id != 1))
     {
         if (shootCooldown.getElapsedTime().asMilliseconds() > 100)
         { // Shooting cooldown (200ms)
@@ -214,18 +214,19 @@ void Player::setAngle(float newAngle)
 void Player::dealDamage(int damage)
 {
     int newHealth = health - damage;
+    std::cout << newHealth << std::endl;
     if (newHealth < 0)
     {
         this->kill();
     }
     else
     {
-        health = newHealth;
+        setHealth(newHealth);
     }
 }
 
 void Player::kill()
 {
-    health = 0;
+    setHealth(0);
     characterShape.setFillColor(sf::Color::Black);
 }

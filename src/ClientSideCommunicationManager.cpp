@@ -77,8 +77,9 @@ void ClientSideCommunicationManager::receiveData(Player player)
         }
         else if (message == "playerHit")
         {
+            unsigned int idFrom;
             int damage;
-            incomingPacket >> damage;
+            incomingPacket >> idFrom >> damage;
             player.dealDamage(damage);
         }
     }
@@ -159,6 +160,18 @@ void ClientSideCommunicationManager::sendClientDataToServer(Player player)
     }
 
     if (socket.send(updatePacket, serverIp, serverPort) != sf::Socket::Done)
+    {
+        std::cerr << "Failed to send player update." << std::endl;
+    }
+}
+
+void ClientSideCommunicationManager::sendHitMessageToServer(unsigned int fromId, unsigned int toId)
+{
+    sf::Packet hitPacket;
+    int damage = 5;
+    hitPacket << "playerHit" << fromId << toId << damage;
+
+    if (socket.send(hitPacket, serverIp, serverPort) != sf::Socket::Done)
     {
         std::cerr << "Failed to send player update." << std::endl;
     }

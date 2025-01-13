@@ -23,6 +23,7 @@ public:
     void receiveData(Player player);
     void synchronizePlayerList(sf::Packet incomingPacket);
     void sendClientDataToServer(Player player);
+    void sendHitMessageToServer(unsigned int fromId, unsigned int toId);
 
 private:
     sf::IpAddress serverIp;

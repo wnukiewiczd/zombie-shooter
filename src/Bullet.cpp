@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include "Bullet.h"
+#include "Player.h"
 #include "ClientSideCommunicationManager.h"
+#include <iostream>
 
 #include <cmath>
 
@@ -27,6 +29,23 @@ void Bullet::draw(sf::RenderWindow &window)
     window.draw(shape);
 }
 
-void Bullet::handleHitting(ClientSideCommunicationManager communicationManager)
+void Bullet::handleHitting(ClientSideCommunicationManager &communicationManager)
 {
+    for (auto &[id, pl] : communicationManager.clientPlayerList)
+    {
+        sf::Vector2f bulletPos = shape.getPosition();
+        float bulletRadius = shape.getRadius();
+        sf::Vector2f targetPos = pl.characterShape.getPosition();
+        float targetRadius = pl.characterShape.getRadius();
+
+        float distance = std::sqrt(std::pow(bulletPos.x - targetPos.x, 2) + std::pow(bulletPos.y - targetPos.y, 2));
+        bool bulletHitPlayer = distance <= (bulletRadius + targetRadius);
+
+        // std::cout << "Cout test" << std::endl;
+        if (bulletHitPlayer)
+        {
+            communicationManager.sendHitMessageToServer(communicationManager.playerId, pl.id);
+            // communicationManager.receiveData(from);
+        }
+    }
 }

@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 class ClientSideCommunicationManager;
+class Player;
 
 class Bullet
 {
@@ -13,7 +14,7 @@ public:
     void draw(sf::RenderWindow &window);
     sf::Vector2f pos;
 
-    void handleHitting(ClientSideCommunicationManager communicationManager);
+    void handleHitting(ClientSideCommunicationManager &communicationManager);
 
 private:
     sf::CircleShape shape;

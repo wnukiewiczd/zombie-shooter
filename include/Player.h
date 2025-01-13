@@ -16,6 +16,7 @@ public:
     std::vector<Bullet> bullets;
     unsigned int id = 0;
     std::string name = "Player1";
+    sf::CircleShape characterShape; // Reprezentacja gracza jako okrąg
 
     void update(sf::RenderWindow &window, float deltaTime);
     void draw(sf::RenderWindow &window);
@@ -52,7 +53,6 @@ public:
     float getRotation() const { return angle; }
 
 private:
-    sf::CircleShape characterShape;         // Reprezentacja gracza jako okrąg
     sf::RectangleShape gunShape;            // Reprezentacja broni
     sf::RectangleShape healthBarShape;      // Reprezentacja życia
     sf::RectangleShape healthBarFrameShape; // Reprezentacja życia obramówki
