@@ -14,7 +14,7 @@ public:
     void draw(sf::RenderWindow &window);
     sf::Vector2f pos;
 
-    void handleHitting(ClientSideCommunicationManager &communicationManager);
+    bool targetHit(ClientSideCommunicationManager &communicationManager);
 
 private:
     sf::CircleShape shape;

@@ -35,8 +35,6 @@ public:
 
     void kill();
 
-    void dealDamage(int damage);
-
     // Dodajemy getter i setter dla pozycji gracza
     sf::Vector2f getPosition() const { return characterShape.getPosition(); }
     void setPosition(float x, float y) { characterShape.setPosition(x, y); }

@@ -8,10 +8,6 @@
 #include "ServerManager.h"
 #include <json.hpp>
 
-ServerManager::ServerManager()
-{
-}
-
 void ServerManager::broadcastPlayerListToSingleClient(sf::IpAddress ip,
                                                       unsigned short port)
 {
@@ -30,34 +26,6 @@ void ServerManager::broadcastPlayerListToSingleClient(sf::IpAddress ip,
     if (socket.send(packet, ip, port) != sf::Socket::Done)
     {
         std::cerr << "Failed to send update to ip " << ip << std::endl;
-    }
-}
-
-void ServerManager::broadcastPlayerListToAllClients()
-{
-    for (const auto &[id, player] : players)
-    {
-        sf::Packet packet;
-        packet << static_cast<unsigned int>(players.size());
-        for (const auto &[id, player] : players)
-        {
-            packet << id << player.name << player.x << player.y << player.angle << player.health;
-            packet << static_cast<unsigned int>(player.bullets.size());
-            for (const auto &bullet : player.bullets)
-            {
-                packet << bullet.first << bullet.second;
-            }
-        }
-
-        if (socket.send(packet, playerIps[id], playerPorts[id]) != sf::Socket::Done)
-        {
-            std::cerr << "Failed to send update to player " << player.id << std::endl;
-        }
-        else
-        {
-            if (id == 1)
-                std::cout << player.x << std::endl;
-        }
     }
 }
 
@@ -88,7 +56,6 @@ void ServerManager::handlePlayerDisconnect(sf::Packet packet, sf::IpAddress send
     std::string name;
     packet >> id;
 
-    std::lock_guard<std::mutex> lock(playersMutex);
     players.erase(id);
     playerIps.erase(id);
     playerPorts.erase(id);
@@ -126,7 +93,10 @@ void ServerManager::handlePlayerUpdate(sf::Packet packet, sf::IpAddress senderIp
     {
         players[id].x = x;
         players[id].y = y;
-        players[id].health = health;
+        // if (health < players[id].health)
+        // {
+        //     players[id].health = health;
+        // }
         players[id].angle = angle;
 
         players[id].bullets.clear();
@@ -148,23 +118,25 @@ void ServerManager::handlePlayerHit(sf::Packet packet, sf::IpAddress senderIp, u
 
     packet >> idFrom >> idTo >> damage;
 
-    // if (players.find(idTo) != players.end())
-    // {
-    //     int newHealth = players[idTo].health - damage;
-    //     if (newHealth < 0)
-    //     {
-    //         players[idTo].health = 0;
-    //     }
-    //     else
-    //     {
-    //         players[idTo].health = newHealth;
-    //     }
-    // }
-
-    sf::Packet packetTarget;
-    packetTarget << "playerHit" << idFrom << damage;
-    if (socket.send(packetTarget, playerIps[idTo], playerPorts[idTo]) != sf::Socket::Done)
+    if (players.find(idTo) != players.end())
     {
-        std::cerr << "Failed to send damage" << std::endl;
+        int newHealth = players[idTo].health - damage;
+        if (newHealth < 0)
+        {
+            players[idTo].health = 0;
+        }
+        else
+        {
+            players[idTo].health = newHealth;
+        }
     }
+
+    // std::cout << players[idTo].health << std::endl;
+
+    // sf::Packet packetTarget;
+    // packetTarget << "playerHit" << idFrom << damage;
+    // if (socket.send(packetTarget, playerIps[idTo], playerPorts[idTo]) != sf::Socket::Done)
+    // {
+    //     std::cerr << "Failed to send damage" << std::endl;
+    // }
 }

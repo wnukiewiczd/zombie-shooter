@@ -29,7 +29,7 @@ class ServerManager
 {
 
 public:
-    ServerManager();
+    ServerManager() {};
     std::unordered_map<unsigned int, ServerPlayer> players;
     std::unordered_map<unsigned int, sf::IpAddress> playerIps;
     std::unordered_map<unsigned int, unsigned short> playerPorts;
@@ -40,7 +40,6 @@ public:
 
     void broadcastPlayerListToSingleClient(sf::IpAddress ip,
                                            unsigned short port);
-    void broadcastPlayerListToAllClients();
     void handlePlayerJoin(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort);
     void handlePlayerUpdate(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort);
     void handlePlayerHit(sf::Packet packet, sf::IpAddress senderIp, unsigned short senderPort);

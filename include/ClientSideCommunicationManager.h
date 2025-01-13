@@ -20,8 +20,8 @@ public:
     void disconnectFromServer();
     std::unordered_map<unsigned int, ServerPlayer> serverPlayerList;
     std::unordered_map<unsigned int, Player> clientPlayerList;
-    void receiveData(Player player);
-    void synchronizePlayerList(sf::Packet incomingPacket);
+    void receiveData(Player &player);
+    void synchronizePlayerList(sf::Packet incomingPacket, Player &player);
     void sendClientDataToServer(Player player);
     void sendHitMessageToServer(unsigned int fromId, unsigned int toId);
 

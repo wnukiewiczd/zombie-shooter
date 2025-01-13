@@ -62,7 +62,7 @@ void ClientSideCommunicationManager::disconnectFromServer()
     }
 }
 
-void ClientSideCommunicationManager::receiveData(Player player)
+void ClientSideCommunicationManager::receiveData(Player &player)
 {
     sf::Packet incomingPacket;
     sf::IpAddress senderIp;
@@ -73,22 +73,17 @@ void ClientSideCommunicationManager::receiveData(Player player)
         incomingPacket >> message;
         if (message == "playerList")
         {
-            this->synchronizePlayerList(incomingPacket);
-        }
-        else if (message == "playerHit")
-        {
-            unsigned int idFrom;
-            int damage;
-            incomingPacket >> idFrom >> damage;
-            player.dealDamage(damage);
+            this->synchronizePlayerList(incomingPacket, player);
         }
     }
 }
 
-void ClientSideCommunicationManager::synchronizePlayerList(sf::Packet incomingPacket)
+void ClientSideCommunicationManager::synchronizePlayerList(sf::Packet incomingPacket, Player &player)
 {
     unsigned int playersCount;
     incomingPacket >> playersCount;
+
+    std::vector<unsigned int> usedIds;
 
     for (int i = 0; i < playersCount; i++)
     {
@@ -98,6 +93,8 @@ void ClientSideCommunicationManager::synchronizePlayerList(sf::Packet incomingPa
         int health;
 
         incomingPacket >> id >> name >> x >> y >> angle >> health;
+
+        usedIds.push_back(id);
 
         std::vector<std::pair<float, float>> bullets;
         incomingPacket >> bulletCount;
@@ -118,7 +115,14 @@ void ClientSideCommunicationManager::synchronizePlayerList(sf::Packet incomingPa
             {
                 // Update existing player record
                 it->second.setPosition(x, y);
-                it->second.setHealth(health);
+                if (health == 0)
+                {
+                    it->second.kill();
+                }
+                else
+                {
+                    it->second.setHealth(health);
+                }
                 it->second.setAngle(angle);
 
                 it->second.bullets.clear(); // Clear bullets to update
@@ -143,6 +147,38 @@ void ClientSideCommunicationManager::synchronizePlayerList(sf::Packet incomingPa
                     newPlayer.addBullet(bullet.first, bullet.second, 0.0f); // Default angle if not available
                 }
                 clientPlayerList.emplace(id, newPlayer);
+            }
+        }
+        else
+        {
+
+            // incomingPacket >> idFrom >> damage;
+            if (health == 0)
+            {
+                player.kill();
+            }
+            else
+            {
+                player.setHealth(health);
+            }
+        }
+    }
+
+    // Usun graczy ktorych juz nie ma na serwerze
+    // std::cout << "ClientPlayerList: " << clientPlayerList.size() << " usedIds: " << usedIds.size() << std::endl;
+    if (clientPlayerList.size() > usedIds.size() - 1)
+    {
+        std::cout << "Jest roznica" << std::endl;
+        for (auto it = clientPlayerList.begin(); it != clientPlayerList.end();)
+        {
+            if (std::find(usedIds.begin(), usedIds.end(), it->first) == usedIds.end())
+            {
+                std::cout << "Usuniety gracz" << std::endl;
+                it = clientPlayerList.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
     }

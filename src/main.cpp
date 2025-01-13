@@ -59,10 +59,17 @@ int main()
         window.clear(sf::Color::Green);
 
         // Rysowanie pocisków obecnego gracza
-        for (auto &bullet : player.bullets)
+        for (auto it = player.bullets.begin(); it != player.bullets.end();)
         {
-            bullet.handleHitting(communicationManager);
-            bullet.draw(window);
+            it->draw(window);
+            if (it->targetHit(communicationManager))
+            {
+                it = player.bullets.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
         }
 
         // Rysowanie lokalnego gracza

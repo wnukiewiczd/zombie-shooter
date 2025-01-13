@@ -29,7 +29,7 @@ void Bullet::draw(sf::RenderWindow &window)
     window.draw(shape);
 }
 
-void Bullet::handleHitting(ClientSideCommunicationManager &communicationManager)
+bool Bullet::targetHit(ClientSideCommunicationManager &communicationManager)
 {
     for (auto &[id, pl] : communicationManager.clientPlayerList)
     {
@@ -41,11 +41,11 @@ void Bullet::handleHitting(ClientSideCommunicationManager &communicationManager)
         float distance = std::sqrt(std::pow(bulletPos.x - targetPos.x, 2) + std::pow(bulletPos.y - targetPos.y, 2));
         bool bulletHitPlayer = distance <= (bulletRadius + targetRadius);
 
-        // std::cout << "Cout test" << std::endl;
         if (bulletHitPlayer)
         {
             communicationManager.sendHitMessageToServer(communicationManager.playerId, pl.id);
-            // communicationManager.receiveData(from);
+            return true;
         }
     }
+    return false;
 }

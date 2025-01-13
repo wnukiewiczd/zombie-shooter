@@ -111,8 +111,11 @@ void Player::handleMovement(float deltaTime)
         }
     }
 
-    characterShape.move(movement);
-    gunShape.move(movement);
+    if (health > 0)
+    {
+        characterShape.move(movement);
+        gunShape.move(movement);
+    }
 }
 
 void Player::handleRotation(sf::RenderWindow &window, float deltaTime)
@@ -138,8 +141,11 @@ void Player::handleShooting()
                                                std::sin(gunShape.getRotation() * M_PI / 180.f) * gunShape.getSize().x / 2);
 
             // Dodanie nowego pocisku
-            addBullet(gunTip.x, gunTip.y, angle + 90.f);
-            shootCooldown.restart();
+            if (health > 0)
+            {
+                addBullet(gunTip.x, gunTip.y, angle + 90.f);
+                shootCooldown.restart();
+            }
         }
     }
 }
@@ -209,20 +215,6 @@ void Player::setHealth(int health)
 void Player::setAngle(float newAngle)
 {
     this->angle = newAngle;
-}
-
-void Player::dealDamage(int damage)
-{
-    int newHealth = health - damage;
-    std::cout << newHealth << std::endl;
-    if (newHealth < 0)
-    {
-        this->kill();
-    }
-    else
-    {
-        setHealth(newHealth);
-    }
 }
 
 void Player::kill()
