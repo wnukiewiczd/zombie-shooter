@@ -8,8 +8,7 @@
 #include "ServerManager.h"
 #include <json.hpp>
 
-void ServerManager::broadcastPlayerListToSingleClient(sf::IpAddress ip,
-                                                      unsigned short port)
+void ServerManager::broadcastPlayerListToSingleClient(sf::IpAddress ip, unsigned short port)
 {
     sf::Packet packet;
     packet << std::string("playerList") << static_cast<unsigned int>(players.size());
@@ -59,6 +58,7 @@ void ServerManager::handlePlayerDisconnect(sf::Packet packet, sf::IpAddress send
     players.erase(id);
     playerIps.erase(id);
     playerPorts.erase(id);
+    deadPlayers.erase(id);
     std::cout << "Player \" " << name << "\" (" << id << ") disconnected." << std::endl;
 
     if (players.empty())
@@ -93,10 +93,6 @@ void ServerManager::handlePlayerUpdate(sf::Packet packet, sf::IpAddress senderIp
     {
         players[id].x = x;
         players[id].y = y;
-        // if (health < players[id].health)
-        // {
-        //     players[id].health = health;
-        // }
         players[id].angle = angle;
 
         players[id].bullets.clear();
@@ -104,10 +100,6 @@ void ServerManager::handlePlayerUpdate(sf::Packet packet, sf::IpAddress senderIp
         {
             players[id].bullets.push_back(bullet);
         }
-    }
-    else
-    {
-        std::cerr << "Update received for unknown player ID: " << id << std::endl;
     }
 }
 
@@ -124,19 +116,21 @@ void ServerManager::handlePlayerHit(sf::Packet packet, sf::IpAddress senderIp, u
         if (newHealth < 0)
         {
             players[idTo].health = 0;
+            deadPlayers.emplace(idTo, players[idTo]);
+            checkLastManStanding(idFrom, players[idFrom]);
         }
         else
         {
             players[idTo].health = newHealth;
         }
     }
+}
 
-    // std::cout << players[idTo].health << std::endl;
-
-    // sf::Packet packetTarget;
-    // packetTarget << "playerHit" << idFrom << damage;
-    // if (socket.send(packetTarget, playerIps[idTo], playerPorts[idTo]) != sf::Socket::Done)
-    // {
-    //     std::cerr << "Failed to send damage" << std::endl;
-    // }
+void ServerManager::checkLastManStanding(unsigned int killerId, ServerPlayer killerServerPlayer)
+{
+    if (gameWonById == 0 && (players.size() - deadPlayers.size() == 1))
+    {
+        std::cout << "Player " << killerServerPlayer.name << " with ID " << killerId << " has won!" << std::endl;
+        gameWonById = killerId;
+    }
 }

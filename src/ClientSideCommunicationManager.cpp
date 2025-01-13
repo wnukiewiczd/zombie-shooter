@@ -151,8 +151,6 @@ void ClientSideCommunicationManager::synchronizePlayerList(sf::Packet incomingPa
         }
         else
         {
-
-            // incomingPacket >> idFrom >> damage;
             if (health == 0)
             {
                 player.kill();
@@ -165,7 +163,6 @@ void ClientSideCommunicationManager::synchronizePlayerList(sf::Packet incomingPa
     }
 
     // Usun graczy ktorych juz nie ma na serwerze
-    // std::cout << "ClientPlayerList: " << clientPlayerList.size() << " usedIds: " << usedIds.size() << std::endl;
     if (clientPlayerList.size() > usedIds.size() - 1)
     {
         std::cout << "Jest roznica" << std::endl;

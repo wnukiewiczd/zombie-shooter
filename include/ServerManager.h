@@ -31,10 +31,12 @@ class ServerManager
 public:
     ServerManager() {};
     std::unordered_map<unsigned int, ServerPlayer> players;
+    std::unordered_map<unsigned int, ServerPlayer> deadPlayers;
     std::unordered_map<unsigned int, sf::IpAddress> playerIps;
     std::unordered_map<unsigned int, unsigned short> playerPorts;
     std::mutex playersMutex;
     unsigned int nextPlayerId = 1;
+    unsigned int gameWonById = 0;
 
     sf::UdpSocket socket;
 
@@ -48,6 +50,8 @@ public:
 private:
     sf::IpAddress serverIp;
     unsigned short serverPort;
+
+    void checkLastManStanding(unsigned int killerId, ServerPlayer killerServerPlayer);
 };
 
 #endif
