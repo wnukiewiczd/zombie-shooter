@@ -15,6 +15,15 @@ void ServerManager::broadcastPlayerListToSingleClient(sf::IpAddress ip, unsigned
     for (const auto &[id, player] : players)
     {
         packet << id << player.name << player.x << player.y << player.angle << player.health;
+        if (id == gameWonById)
+        {
+            packet << true;
+        }
+        else
+        {
+            packet << false;
+        }
+
         packet << static_cast<unsigned int>(player.bullets.size());
         for (const auto &bullet : player.bullets)
         {

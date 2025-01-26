@@ -9,16 +9,22 @@
 #include "ServerManager.h"
 #include "CursorManager.h"
 
-int main()
+int main(int argc, char *argv[])
 {
+    if (argc < 3)
+    {
+        std::cerr << "Wpisz wiecej argumentow" << std::endl;
+        return -1;
+    }
+
     const int windowWidth = 800;
     const int windowHeight = 600;
 
-    ClientSideCommunicationManager communicationManager("127.0.0.1", 54001, "Player1");
+    ClientSideCommunicationManager communicationManager(argv[1], 54001, argv[2]);
 
     communicationManager.connectToServer();
 
-    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Multiplayer Game");
+    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Shooter Game");
     window.setFramerateLimit(60);
     window.setMouseCursorVisible(false);
 
@@ -83,6 +89,12 @@ int main()
                 bullet.draw(window);
             }
             pl.draw(window);
+        }
+
+        // Rysowanie informacji o zakonczeniu gry jak ktos wygral
+        if (communicationManager.gameFinished)
+        {
+            communicationManager.drawFinishedInfo(window);
         }
 
         // Rysowanie celownika

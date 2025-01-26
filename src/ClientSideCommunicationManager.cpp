@@ -14,6 +14,11 @@ ClientSideCommunicationManager::ClientSideCommunicationManager(std::string serve
     socket.setBlocking(false);
 
     this->playerName = playerName;
+
+    finishText.setString("Gra zostala zakonczona!");
+    finishText.setCharacterSize(40);
+    finishText.setFillColor(sf::Color::White);
+    finishText.setStyle(sf::Text::Regular);
 }
 
 void ClientSideCommunicationManager::connectToServer()
@@ -91,8 +96,14 @@ void ClientSideCommunicationManager::synchronizePlayerList(sf::Packet incomingPa
         std::string name;
         float x, y, angle;
         int health;
+        bool gameWon;
 
-        incomingPacket >> id >> name >> x >> y >> angle >> health;
+        incomingPacket >> id >> name >> x >> y >> angle >> health >> gameWon;
+
+        if (gameWon)
+        {
+            gameFinished = true;
+        }
 
         usedIds.push_back(id);
 
@@ -165,12 +176,10 @@ void ClientSideCommunicationManager::synchronizePlayerList(sf::Packet incomingPa
     // Usun graczy ktorych juz nie ma na serwerze
     if (clientPlayerList.size() > usedIds.size() - 1)
     {
-        std::cout << "Jest roznica" << std::endl;
         for (auto it = clientPlayerList.begin(); it != clientPlayerList.end();)
         {
             if (std::find(usedIds.begin(), usedIds.end(), it->first) == usedIds.end())
             {
-                std::cout << "Usuniety gracz" << std::endl;
                 it = clientPlayerList.erase(it);
             }
             else
@@ -208,4 +217,16 @@ void ClientSideCommunicationManager::sendHitMessageToServer(unsigned int fromId,
     {
         std::cerr << "Failed to send player update." << std::endl;
     }
+}
+
+void ClientSideCommunicationManager::drawFinishedInfo(sf::RenderWindow &window)
+{
+    if (!font.loadFromFile("assets/fonts/arial.ttf"))
+    {
+        std::cout << "Error loading font" << std::endl;
+    }
+
+    finishText.setFont(font);
+    finishText.setPosition(0, 0);
+    window.draw(finishText);
 }

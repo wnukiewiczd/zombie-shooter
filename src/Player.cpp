@@ -72,43 +72,21 @@ void Player::handleMovement(float deltaTime)
 {
     sf::Vector2f movement(0.0f, 0.0f);
 
-    if (id == 1)
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
     {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-        {
-            movement.y -= speed * deltaTime;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-        {
-            movement.y += speed * deltaTime;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        {
-            movement.x -= speed * deltaTime;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        {
-            movement.x += speed * deltaTime;
-        }
+        movement.y -= speed * deltaTime;
     }
-    else
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
     {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-        {
-            movement.y -= speed * deltaTime;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-        {
-            movement.y += speed * deltaTime;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-        {
-            movement.x -= speed * deltaTime;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-        {
-            movement.x += speed * deltaTime;
-        }
+        movement.y += speed * deltaTime;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+    {
+        movement.x -= speed * deltaTime;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+    {
+        movement.x += speed * deltaTime;
     }
 
     if (health > 0)
@@ -129,10 +107,10 @@ void Player::handleRotation(sf::RenderWindow &window, float deltaTime)
 
 void Player::handleShooting()
 {
-    if ((sf::Mouse::isButtonPressed(sf::Mouse::Left) && id == 1) || (sf::Mouse::isButtonPressed(sf::Mouse::Right) && id != 1))
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
     {
         if (shootCooldown.getElapsedTime().asMilliseconds() > 100)
-        { // Shooting cooldown (200ms)
+        {
             // Wyliczenie pozycji wylotu pocisku
             sf::Vector2f gunTip = gunShape.getPosition() +
                                   sf::Vector2f(std::cos((gunShape.getRotation() + 90.f) * M_PI / 180.f) * gunShape.getSize().y,

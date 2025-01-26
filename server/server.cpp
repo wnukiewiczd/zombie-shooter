@@ -11,6 +11,7 @@ ServerManager serverManager;
 
 int main()
 {
+    // INADDR_ANY, ponieważ bindujemy bez sprecyzowania konkretnego IP
     if (serverManager.socket.bind(54001) != sf::Socket::Done)
     {
         std::cerr << "Failed to bind server socket." << std::endl;

@@ -15,6 +15,9 @@ public:
 
     std::string playerName;
     unsigned int playerId = 0;
+    bool gameFinished = false;
+    sf::Font font;
+    sf::Text finishText;
 
     void connectToServer();
     void disconnectFromServer();
@@ -24,6 +27,7 @@ public:
     void synchronizePlayerList(sf::Packet incomingPacket, Player &player);
     void sendClientDataToServer(Player player);
     void sendHitMessageToServer(unsigned int fromId, unsigned int toId);
+    void drawFinishedInfo(sf::RenderWindow &window);
 
 private:
     sf::IpAddress serverIp;
